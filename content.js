@@ -4,3 +4,13 @@ document.addEventListener("mouseup", () => {
     chrome.runtime.sendMessage({ action: "textSelected", text: selectedText });
   }
 });
+
+// Function to send a message to the background script
+function getUserId() {
+  chrome.runtime.sendMessage({ action: "getUserId" }, function (response) {
+    console.log("User ID:", response.userId);
+  });
+}
+
+// Call the function when needed
+getUserId();
