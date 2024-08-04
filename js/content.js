@@ -27,10 +27,6 @@ AppendStyle.innerHTML = `
 `;
 document.head.appendChild(AppendStyle);
 
-$(document).ready(function () {
-  console.log($.fn.jquery);
-});
-
 // Fetch saved words and highlight them
 chrome.storage.local.get({ savedWords: [] }, (result) => {
   const savedWords = result.savedWords || [];
@@ -40,24 +36,14 @@ chrome.storage.local.get({ savedWords: [] }, (result) => {
 
 // Function to highlight the text
 function highlightText(words) {
-  words.forEach((word) => {
-    word = word.text.toLocaleLowerCase();
-    const regex = new RegExp(`(${word})`, "gi");
-    $("body").each(function () {
-      $(this)
-        .find("*")
-        .contents()
-        .filter(function () {
-          return this.nodeType === Node.TEXT_NODE && regex.test(this.nodeValue);
-        })
-        .each(function () {
-          console.log($(this));
-          const newHTML = this.nodeValue.replace(
-            regex,
-            '<span class="falcon-highlight">$1</span>'
-          );
-          $(this).replaceWith(newHTML);
-        });
-    });
+  var instance = new Mark(document.querySelector("body"));
+  const wordArray = words.map((word) => word.text.toLocaleLowerCase());
+  // console.log(wordArray);
+  instance.mark(wordArray, {
+    wildcards: "withSpaces",
+    element: "bv",
+    accuracy: "exactly",
+    separateWordSearch: false,
+    className: "falcon-highlight",
   });
 }
