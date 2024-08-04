@@ -1,0 +1,55 @@
+{
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    // "commands": {
+    //     "_execute_browser_action": {
+    //         "description": "Activate the extension",
+    //         "suggested_key": {
+    //             "chromeos": "Ctrl+Shift+F",
+    //             "default": "Ctrl+Shift+F",
+    //             "linux": "Ctrl+Shift+F",
+    //             "mac": "Command+Shift+F"
+    //         }
+    //     }
+    // },
+    "content_scripts": [
+        {
+            "js": [
+                "content.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    },
+    "description": "An extension to help you save more words to practice later",
+    "host_permissions": [
+        "http://*/*",
+        "https://*/*"
+    ],
+    "icons": {
+        "48": "icon.png"
+    },
+    "manifest_version": 3,
+    "name": "Text Saver",
+    "options_ui": {
+        "open_in_tab": true,
+        "page": "options.html"
+    },
+    "permissions": [
+        "activeTab",
+        "contextMenus",
+        "scripting",
+        "storage"
+    ],
+    "short_name": "Practice English",
+    "version": "1.0"
+}
