@@ -5,35 +5,27 @@
     "background": {
         "service_worker": "background.js"
     },
-    // "commands": {
-    //     "_execute_browser_action": {
-    //         "description": "Activate the extension",
-    //         "suggested_key": {
-    //             "chromeos": "Ctrl+Shift+F",
-    //             "default": "Ctrl+Shift+F",
-    //             "linux": "Ctrl+Shift+F",
-    //             "mac": "Command+Shift+F"
-    //         }
-    //     }
-    // },
     "content_scripts": [
         {
             "js": [
-                "content.js"
+                "js/jquery-3.7.1.min.js",
+                "js/content.js"
             ],
             "matches": [
-                "<all_urls>"
+                "http://*/*",
+                "https://*/*"
             ],
-            "run_at": "document_end"
+            "run_at": "document_idle"
+            // "all_frames": false,
+            // "match_about_blank": false
         }
     ],
     "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'"
+        "extension_pages": "script-src 'self'; object-src 'self'; frame-src"
     },
     "description": "An extension to help you save more words to practice later",
     "host_permissions": [
-        "http://*/*",
-        "https://*/*"
+        "https://*.youtube.com/*"
     ],
     "icons": {
         "48": "icon.png"
@@ -48,8 +40,20 @@
         "activeTab",
         "contextMenus",
         "scripting",
-        "storage"
+        "storage",
+        "tabs"
     ],
-    "short_name": "Practice English",
-    "version": "1.0"
+    "short_name": "VocabBuilder",
+    "version": "1.0",
+    "web_accessible_resources": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "resources": [
+                "/js/*.js",
+                "popup.html"
+            ]
+        }
+    ]
 }
