@@ -1,23 +1,21 @@
-const randomId = () => {
-  let id = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (let i = 0; i < 22; i++) {
-    id += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return id;
+const randomId = async () => {
+  const response = await fetch(
+    "https://backend.theassignit.workers.dev/generate"
+  );
+  const data = await response.json();
+  return data[0].id;
 };
 
 // Function to get or create a user ID
-const getUserID = function () {
+const getUserID = async function () {
   return new Promise((resolve, reject) => {
     // Check if the user ID already exists in chrome storage
-    chrome.storage.local.get(["userId"], (result) => {
+    chrome.storage.local.get(["userId"], async (result) => {
       let userId = result.userId;
 
       if (!userId) {
         // If not, generate a new one and store it
-        userId = randomId();
+        userId = await randomId();
         chrome.storage.local.set({ userId: userId }, () => {
           resolve(userId);
         });
@@ -28,9 +26,17 @@ const getUserID = function () {
   });
 };
 
+function preProcessText(text) {
+  // Preprocess the text by removing special characters, numbers, and converting to lowercase
+  capitalizeText = (text) =>
+    (text = text.trim().replace(/^[^\w]+|[^\w]+$/g, ""));
+  text = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  return text;
+}
+
 function updateBadge(url) {
   chrome.storage.local.get({ savedWords: [] }, (result) => {
-    const savedWords = result.savedWords || [];
+    const savedWords = result.savedWords;
     const count = savedWords.filter((word) => word.url === url).length;
     chrome.action.setBadgeText({ text: count.toString() });
   });
@@ -38,12 +44,12 @@ function updateBadge(url) {
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "saveWord") {
-    const selectedText = info.selectionText;
+    const selectedText = preProcessText(info.selectionText);
     const url = tab.url;
     const date = new Date().toLocaleString();
 
     chrome.storage.local.get({ savedWords: [] }, (result) => {
-      const savedWords = result.savedWords || [];
+      const savedWords = result.savedWords;
 
       // Check if the selected text already exists
       const exists = savedWords.some(
@@ -54,11 +60,60 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         savedWords.push({ text: selectedText, url, date });
         chrome.storage.local.set({ savedWords }, () => {
           updateBadge(url);
+          //todo: apply selection highlight on the word
         });
       }
     });
+  } else if (info.menuItemId === "summarizeText") {
+    const selectedText = info.selectionText;
+    summarizeText(selectedText, tab.url);
+  } else if (info.menuItemId === "summarizePage") {
+    chrome.tabs.sendMessage(tab.id, { action: "summarizePage" });
   }
 });
+
+// Function to summarize text
+function summarizeText(text, url) {
+  fetch("https://backend.theassignit.workers.dev/ai", {
+    method: "POST",
+    body: JSON.stringify({
+      user: "user",
+      text: text,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      const aiResponse = data.choices[0].message.content;
+      // Store the AI response in the local storage
+      chrome.storage.local.get({ savedWords: [] }, (result) => {
+        const savedWords = result.savedWords;
+
+        // Find the word in the savedWords array
+        const wordIndex = savedWords.findIndex(
+          (word) => word.text === text && word.url === url
+        );
+
+        if (wordIndex !== -1) {
+          // Update the existing word with the AI response
+          savedWords[wordIndex].aiResponse = aiResponse;
+        } else {
+          // Add a new entry if the word does not exist
+          savedWords.push({
+            text: text,
+            url: url,
+            date: new Date().toLocaleString(),
+            aiResponse: aiResponse,
+          });
+        }
+
+        // Save the updated savedWords array back to local storage
+        chrome.storage.local.set({ savedWords });
+      });
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
 
 // Initialize context menu
 chrome.runtime.onInstalled.addListener(() => {
@@ -66,6 +121,18 @@ chrome.runtime.onInstalled.addListener(() => {
     id: "saveWord",
     title: "Save Word",
     contexts: ["selection"],
+  });
+
+  chrome.contextMenus.create({
+    id: "summarizeText",
+    title: "Summarize Text",
+    contexts: ["selection"],
+  });
+
+  chrome.contextMenus.create({
+    id: "summarizePage",
+    title: "Summarize Page",
+    contexts: ["page"],
   });
 });
 
@@ -92,6 +159,47 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     getUserID().then((userId) => {
       sendResponse({ userId: userId });
     });
+  } else if (request.action === "defineWord") {
+    fetch("https://backend.theassignit.workers.dev/ai", {
+      method: "POST",
+      body: JSON.stringify({
+        user: "user",
+        text: preProcessText(request.word),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const aiResponse = data.choices[0].message.content;
+        sendResponse({ data: aiResponse });
+        // Store the AI response in the local storage
+        chrome.storage.local.get({ savedWords: [] }, (result) => {
+          const savedWords = result.savedWords;
+
+          // Find the word in the savedWords array
+          const wordIndex = savedWords.findIndex(
+            (word) => preProcessText(word.text) === request.word
+          );
+
+          if (wordIndex !== -1) {
+            // Update the existing word with the AI response
+            savedWords[wordIndex].aiResponse = aiResponse;
+          } else {
+            // Add a new entry if the word does not exist
+            savedWords.push({
+              text: preProcessText(request.word),
+              url: sender.tab.url,
+              date: new Date().toLocaleString(),
+              aiResponse: aiResponse,
+            });
+          }
+
+          // Save the updated savedWords array back to local storage
+          chrome.storage.local.set({ savedWords });
+        });
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
   }
   return true; // Keep the message channel open for sendResponse
 });

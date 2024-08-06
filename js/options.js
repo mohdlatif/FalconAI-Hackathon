@@ -7,17 +7,47 @@ function loadSavedWords() {
     const wordsContainer = document.getElementById("wordsContainer");
     wordsContainer.innerHTML = ""; // Clear previous content
 
-    result.savedWords.forEach((word, index) => {
-      const wordElement = document.createElement("div");
-      wordElement.textContent = `${word.date} - ${word.url} - ${word.text}`;
+    const table = document.createElement("table");
+    const headerRow = document.createElement("tr");
 
+    const headers = ["Word", "Date", "Definition"];
+    headers.forEach((headerText) => {
+      const header = document.createElement("th");
+      header.textContent = headerText;
+      headerRow.appendChild(header);
+    });
+
+    table.appendChild(headerRow);
+
+    result.savedWords.forEach((word, index) => {
+      const row = document.createElement("tr");
+
+      const wordCell = document.createElement("td");
+      const wordLink = document.createElement("a");
+      wordLink.href = word.url;
+      wordLink.textContent = word.text;
+      wordLink.target = "_blank";
+      wordCell.appendChild(wordLink);
+      row.appendChild(wordCell);
+
+      const dateCell = document.createElement("td");
+      dateCell.textContent = word.date;
+      row.appendChild(dateCell);
+
+      const definitionCell = document.createElement("td");
+      definitionCell.textContent = word.aiResponse;
+      row.appendChild(definitionCell);
+
+      const deleteCell = document.createElement("td");
       const deleteButton = document.createElement("button");
       deleteButton.textContent = "Delete";
       deleteButton.addEventListener("click", () => deleteWord(index));
+      deleteCell.appendChild(deleteButton);
+      row.appendChild(deleteCell);
 
-      wordElement.appendChild(deleteButton);
-      wordsContainer.appendChild(wordElement);
+      table.appendChild(row);
     });
+    wordsContainer.appendChild(table);
   });
 }
 
