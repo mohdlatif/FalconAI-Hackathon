@@ -34,6 +34,27 @@ function preProcessText(text) {
   return text;
 }
 
+// Initialize context menu
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.contextMenus.create({
+    id: "saveWord",
+    title: "Save Word",
+    contexts: ["selection"],
+  });
+
+  // chrome.contextMenus.create({
+  //   id: "summarizeText",
+  //   title: "Summarize Text",
+  //   contexts: ["selection"],
+  // });
+
+  chrome.contextMenus.create({
+    id: "summarizePage",
+    title: "Summarize Page",
+    contexts: ["page"],
+  });
+});
+
 function updateBadge(url) {
   chrome.storage.local.get({ savedWords: [] }, (result) => {
     const savedWords = result.savedWords;
@@ -53,13 +74,14 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
       // Check if the selected text already exists
       const exists = savedWords.some(
-        (word) => word.text === selectedText && word.url === url
+        (word) => preProcessText(word.text) === selectedText
       );
 
       if (!exists) {
         savedWords.push({ text: selectedText, url, date });
         chrome.storage.local.set({ savedWords }, () => {
           updateBadge(url);
+          updateHighlights();
           //todo: apply selection highlight on the word
         });
       }
@@ -115,31 +137,11 @@ function summarizeText(text, url) {
     });
 }
 
-// Initialize context menu
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({
-    id: "saveWord",
-    title: "Save Word",
-    contexts: ["selection"],
-  });
-
-  chrome.contextMenus.create({
-    id: "summarizeText",
-    title: "Summarize Text",
-    contexts: ["selection"],
-  });
-
-  chrome.contextMenus.create({
-    id: "summarizePage",
-    title: "Summarize Page",
-    contexts: ["page"],
-  });
-});
-
 // Update badge when tab is updated
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url) {
     updateBadge(tab.url);
+    updateHighlights();
   }
 });
 
@@ -148,9 +150,24 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
     if (tab.url) {
       updateBadge(tab.url);
+      updateHighlights();
     }
   });
 });
+
+function updateHighlights() {
+  chrome.storage.local.get({ savedWords: [] }, (result) => {
+    const savedWords = result.savedWords || [];
+    chrome.tabs.query({}, (tabs) => {
+      tabs.forEach((tab) => {
+        chrome.tabs.sendMessage(tab.id, {
+          action: "updateHighlights",
+          savedWords,
+        });
+      });
+    });
+  });
+}
 
 // Listener for messages from content scripts
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -177,7 +194,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
           // Find the word in the savedWords array
           const wordIndex = savedWords.findIndex(
-            (word) => preProcessText(word.text) === request.word
+            (word) => preProcessText(word.text) === preProcessText(request.word)
           );
 
           if (wordIndex !== -1) {

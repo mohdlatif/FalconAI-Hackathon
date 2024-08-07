@@ -14,6 +14,14 @@ window.onload = function () {
     highlightText(savedWords);
   });
 
+  // Listen for updates to saved words
+  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === "updateHighlights") {
+      console.log("Received updateHighlights message");
+      console.log(request.savedWords);
+      highlightText(request.savedWords);
+    }
+  });
   // Function to highlight the text
   function highlightText(words) {
     var instance = new Mark(document.querySelector("body"));

@@ -84,6 +84,8 @@ function onMove(event) {
   }px, ${
     y + mHeight < document.documentElement.clientHeight ? y : y - mHeight
   }px)`;
+
+  modal.style.visibility = "visible";
 }
 
 document.onmousedown = function (event) {
