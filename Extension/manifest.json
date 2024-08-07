@@ -26,7 +26,7 @@
     "content_security_policy": {
         "extension_pages": "script-src 'self'; object-src 'self'; frame-src"
     },
-    "description": "An extension to help you save more words to practice later",
+    "description": "LexiLeap helps you memorize mre words with a single click and see them highlighted across websites",
     "host_permissions": [
         "https://*.youtube.com/*",
         "https://backend.theassignit.workers.dev/*"
@@ -35,7 +35,7 @@
         "48": "icon.png"
     },
     "manifest_version": 3,
-    "name": "Text Saver",
+    "name": "LexiLeap",
     "options_ui": {
         "open_in_tab": true,
         "page": "options.html"
@@ -47,7 +47,7 @@
         "storage",
         "tabs"
     ],
-    "short_name": "VocabBuilder",
+    "short_name": "LexiLeap",
     "version": "1.0",
     "web_accessible_resources": [
         {
