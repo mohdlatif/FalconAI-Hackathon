@@ -5,7 +5,7 @@ function getUserId() {
   });
 }
 
-// getUserId();
+getUserId();
 
 window.onload = function () {
   // Fetch saved words and highlight them
@@ -17,8 +17,8 @@ window.onload = function () {
   // Listen for updates to saved words
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === "updateHighlights") {
-      console.log("Received updateHighlights message");
-      console.log(request.savedWords);
+      // console.log("Received updateHighlights message");
+      // sendResponse("Done updating highlights");
       highlightText(request.savedWords);
     }
   });
