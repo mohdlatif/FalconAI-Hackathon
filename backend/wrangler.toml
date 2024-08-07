@@ -1,0 +1,32 @@
+name = "backend"
+compatibility_date = "2024-08-05"
+
+[vars]
+API_URL = ""
+API_KEY = ""
+BetterStackAPI = ""
+supabase= ""
+
+
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "faclocn-vocab-hackathon"
+database_id = "60e91d35-77da-41b7-9b0a-a344f5b71a1f"
+
+
+# [[kv_namespaces]]
+# binding = "MY_KV_NAMESPACE"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "my-bucket"
+
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "my-database"
+# database_id = ""
+
+# [ai]
+# binding = "AI"
