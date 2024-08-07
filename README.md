@@ -6,6 +6,27 @@
 
 LexiLeap is an innovative vocabulary learning tool designed for non-native English speakers. It seamlessly integrates into your daily web browsing experience, making language learning effortless and contextual.
 
+## 🚀 Quick Start: Try the Extension
+
+Follow these simple steps to test out the LexiLeap Chrome extension:
+
+1. Open your command prompt or terminal.
+
+2. Clone the repository by typing:
+
+git clone git@github.com:mohdlatf/FalconAI-Hackathon.git
+
+3. Navigate to the cloned folder:
+cd FalconAI-Hackathon
+
+4. Open Google Chrome and go to `chrome://extensions/`
+
+5. Enable "Developer mode" in the top right corner.
+
+6. Drag and drop the `extension` folder from the FalconAI-Hackathon directory directly into the Chrome extensions page.
+
+7. You're all set! The LexiLeap extension should now be installed and ready to use.
+
 ## 🌟 Features
 
 - 🧠 AI-powered definitions and examples
