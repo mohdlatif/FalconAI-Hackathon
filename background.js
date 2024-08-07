@@ -94,11 +94,10 @@ function getWordDefination(defineWord, sendResponse) {
           (word) => preProcessText(word.text) === preProcessText(defineWord)
         );
 
-        storeWordsInSupabase(savedWords);
-
         if (wordIndex !== -1) {
           // Update the existing word with the AI response
           savedWords[wordIndex].aiResponse = aiResponse;
+          storeWordsInSupabase(savedWords);
         } else {
           // Add a new entry if the word does not exist
           savedWords.push({
@@ -107,6 +106,7 @@ function getWordDefination(defineWord, sendResponse) {
             date: new Date().toLocaleString(),
             aiResponse: aiResponse,
           });
+          storeWordsInSupabase(savedWords);
         }
 
         // Save the updated savedWords array back to local storage
