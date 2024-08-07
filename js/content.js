@@ -1,12 +1,3 @@
-// Send a message to the background script
-function getUserId() {
-  chrome.runtime.sendMessage({ action: "getUserId" }, function (response) {
-    console.log("User ID:", response.userId);
-  });
-}
-
-getUserId();
-
 window.onload = function () {
   // Fetch saved words and highlight them
   chrome.storage.local.get({ savedWords: [] }, (result) => {
