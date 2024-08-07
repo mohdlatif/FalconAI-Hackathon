@@ -6,6 +6,24 @@ const randomId = async () => {
   return data[0].id;
 };
 
+async function storeWordsInSupabase(savedWords) {
+  const userId = await getUserID();
+  const response = await fetch(
+    `https://backend.theassignit.workers.dev/store`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        userId: userId,
+        savedWords: savedWords,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    console.error("Error storing words in Supabase:", response.statusText);
+  }
+}
+
 // Function to get or create a user ID
 const getUserID = async function () {
   return new Promise((resolve, reject) => {
@@ -48,11 +66,11 @@ chrome.runtime.onInstalled.addListener(() => {
   //   contexts: ["selection"],
   // });
 
-  chrome.contextMenus.create({
-    id: "summarizePage",
-    title: "Summarize Page",
-    contexts: ["page"],
-  });
+  // chrome.contextMenus.create({
+  //   id: "summarizePage",
+  //   title: "Summarize Page",
+  //   contexts: ["page"],
+  // });
 });
 
 function getWordDefination(defineWord, sendResponse) {
@@ -75,6 +93,8 @@ function getWordDefination(defineWord, sendResponse) {
         const wordIndex = savedWords.findIndex(
           (word) => preProcessText(word.text) === preProcessText(defineWord)
         );
+
+        storeWordsInSupabase(savedWords);
 
         if (wordIndex !== -1) {
           // Update the existing word with the AI response
@@ -125,6 +145,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         chrome.storage.local.set({ savedWords }, () => {
           updateBadge(url);
           updateHighlights(tab);
+
           //todo: apply selection highlight on the word
         });
       }

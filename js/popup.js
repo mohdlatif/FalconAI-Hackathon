@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  chrome.runtime.sendMessage({ action: "getUserId" }, function (response) {
+    const userIdContainer = document.getElementById("userIdContainer");
+    userIdContainer.textContent = "User ID: " + response.userId;
+  });
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const url = tabs[0].url;
     chrome.storage.local.get({ savedWords: [] }, (result) => {
